@@ -1,9 +1,20 @@
 var reflect = require("can-reflect");
 
+function isBuiltInPrototype(obj) {
+    return (obj === Object.prototype) || (Object.prototype.toString.call(obj) !== '[object Object]' &&
+			Object.prototype.toString.call(obj).indexOf('[object ') !== -1)
+}
+
+
 var KeyTree = function(treeStructure){
     this.treeStructure = treeStructure;
     var FirstConstructor = treeStructure[0];
-    this.root = new FirstConstructor();
+    if( reflect.isConstructorLike(FirstConstructor) ) {
+        this.root = new FirstConstructor();
+    } else {
+        this.root = FirstConstructor;
+    }
+
 };
 
 KeyTree.prototype.add = function(keys) {
@@ -12,7 +23,13 @@ KeyTree.prototype.add = function(keys) {
         var key = keys[i];
         var store = reflect.getKeyValue(place, key);
         if(!store) {
-            store = new this.treeStructure[i+1]();
+            var Constructor = this.treeStructure[i+1];
+            if(isBuiltInPrototype(Constructor.prototype)) {
+                store = new Constructor();
+            } else {
+                store = new Constructor(key);
+            }
+
             reflect.setKeyValue(place, key, store);
         }
         place = store;
@@ -21,7 +38,7 @@ KeyTree.prototype.add = function(keys) {
         reflect.addValues(place, [keys[keys.length - 1]]);
     } else {
         // only containers supported at the end
-        debugger;
+        throw new Error("can-key-tree: Map types are not supported yet.");
     }
 };
 KeyTree.prototype.get = function(keys) {
@@ -36,27 +53,56 @@ KeyTree.prototype.get = function(keys) {
     }
     return place;
 };
+
+function clear(item, depth, maxDepth) {
+    if(maxDepth === depth) {
+        if(reflect.isMoreListLikeThanMapLike(item)) {
+            // remove each item
+            reflect.removeValues(item, reflect.toArray(item));
+        } else {
+            // only containers supported at the end
+            throw new Error("can-key-tree: Map types are not supported yet.");
+        }
+    } else {
+        reflect.each(item, function(value, key){
+            clear(value, depth+1, maxDepth);
+            reflect.deleteKeyValue(item, key);
+        });
+    }
+
+}
+
 KeyTree.prototype.delete = function(keys){
     var place = this.root;
     var roots = [this.root];
+    // find location of the removal of the last key ...
     for(var i = 0; i < keys.length - 1 ; i++) {
         var key = keys[i];
         var store = reflect.getKeyValue(place, key);
         if(!store) {
             return false;
         } else {
-            roots.push(store)
+            roots.push(store);
         }
         place = store;
     }
 
-    if(reflect.isMoreListLikeThanMapLike(place)) {
-        reflect.removeValues(place, [keys[keys.length - 1]]);
+    // `place` is now the object we are removing the last key from
+    var lastKey = keys[keys.length - 1];
+    // if we are removing a leaf
+    if(keys.length === this.treeStructure.length) {
+        if(reflect.isMoreListLikeThanMapLike(place)) {
+            reflect.removeValues(place, [lastKey]);
+        } else {
+            // only containers supported at the end
+            throw new Error("can-key-tree: Map types are not supported yet.");
+        }
     } else {
-        // only containers supported at the end
-        debugger;
+        // we need to recursively clear the node's values
+        clear(reflect.getKeyValue(place, lastKey), keys.length, this.treeStructure.length - 1);
+        reflect.deleteKeyValue(place, lastKey);
     }
-    debugger;
+
     for(i = roots.length - 2; i >= 0 ; i--) {
         if( reflect.size(place) === 0 ) {
             place = roots[i];

@@ -2,31 +2,180 @@
 
 [![Build Status](https://travis-ci.org/canjs/can-key-tree.svg?branch=master)](https://travis-ci.org/canjs/can-key-tree)
 
-Add and remove items to a tree
+`can-key-tree` can be used to store items in a tree-like structure where the nodes of
+the tree can be any type that works with [can-reflect](https://canjs.com/doc/can-reflect.html).
 
-## Usage
+## Use
 
-### ES6 use
-
-With StealJS, you can import this module directly in a template that is autorendered:
-
-```js
-import plugin from 'can-key-tree';
-```
-
-### CommonJS use
-
-Use `require` to load `can-key-tree` and everything else
-needed to create a template that uses `can-key-tree`:
+Import the `KeyTree` constructor from `can-key-tree`:
 
 ```js
-var plugin = require("can-key-tree");
+import KeyTree from  'can-key-tree';
 ```
 
-### Standalone use
+Create an instance of `KeyTree` with an array of types.  An instance of each type
+will be used as the nodes of the tree. The following creates a tree structure
+3 levels deep:
 
-Load the `global` version of the plugin:
 
-```html
-<script src='./node_modules/can-key-tree/dist/global/can-key-tree.js'></script>
+```js
+var keyTree = new KeyTree([Object,Object,Array])
 ```
+
+Once you've created a `keyTree`, you can `.add`, `.delete` and `.get` values from
+it.
+
+#### `.add(keys)`
+
+The following adds three `handlers`:
+
+```js
+function handler1(){}
+function handler2(){}
+function handler3(){}
+
+keyTree.add(["li","click", handler1]);
+keyTree.add(["li","click", handler2]);
+keyTree.add(["li","dblclick", handler3]);
+```
+
+The `keyTree` data structure will look like:
+
+```js
+{
+    "li": {
+        "click": [handler1, handler2],
+        "dblclick": [handler3]
+    }
+}
+```
+
+#### `.get(keys)`
+
+To get the `li` `click` handlers, use `.get`:
+
+```js
+keyTree.get(["li","click"]) //-> [handler1, handler2]
+```
+
+To get all `li` handlers, use `.get`:
+
+
+```js
+keyTree.get(["li"]) //-> [handler1, handler2, handler3]
+```
+
+#### `.delete(keys)`
+
+To delete a handler, use `.delete`:
+
+```js
+keyTree.delete(["click","li", handler1]);
+```
+
+The `keyTree` data structure will look like:
+
+```js
+{
+    "li": {
+        "click": [handler1],
+        "dblclick": [handler3]
+    }
+}
+```
+
+To delete the remaining `li` handlers:
+
+```js
+keyTree.delete(["click","li"]);
+```
+
+The `keyTree` data structure will look like:
+
+```js
+{}
+```
+
+## Advanced Use
+
+Often, when a node is created, there needs to be some initial setup, and when a
+node is empty, some teardown.
+
+This can be achieved by creating custom types.  For example, perhaps we want to
+build an event delegation system.  We can do that as follows:
+
+```js
+// Create an event handler type.
+var Delegator = function(parentKey){
+    // Save the element this EventHandler object is created for.
+    // Custom constructors get called with their parentKey.
+    this.element = parentKey;
+    // the nested data `{click: [handlers...], dblclick: [handlers...]}`
+    this.events = {};
+    // the callbacks added for each handler.
+    this.delegated = {};
+};
+canReflect.assignSymbols( Delegator.prototype, {
+    // when a new event happens, setup event delegation.
+    "can.setKeyValue": function(eventName, handlersBySelector){
+
+        this.delegated[eventName] = function(ev){
+            canReflect.each(handlersBySelector, function(handlers, selector){
+                var cur = ev.target;
+                do {
+                    if (cur.matches(selector)) {
+                        handlers.forEach(function(handler){
+                            handler.call(cur, ev);
+                        });
+                    }
+                    cur = cur.parentNode;
+                } while (cur && cur !== ev.currentTarget);
+            });
+        };
+        this.events[eventName] = handlersBySelector;
+        this.element.addEventListener(eventName,this.delegated[eventName]);
+    },
+    "can.getKeyValue": function(eventName) {
+        return this.events[eventName];
+    },
+    // when an event gets removed, teardown event delegation and clean up.
+    "can.deleteKeyValue": function(eventName) {
+        this.element.removeEventListener(eventName,this.delegated[eventName]);
+        delete this.delegated[eventName];
+        delete this.events[eventName];
+    },
+    // we need to know how many items at this node
+    "can.getOwnEnumerableKeys": function(){
+        return Object.keys(this.events);
+    }
+});
+
+// create an event tree that stores:
+// - "element being delegated" ->
+//   - A "delegator" instance for an event ->
+//     - The "selectors" we are delegating ->
+//       - The handlers to call
+var eventTree = new KeyTree([Map, Delegator, Object, Array]);
+
+
+// to listen to an event:
+function handler() {
+    console.log("an li clicked");
+}
+
+eventTree.add([document.body, "click", "li", handler]);
+
+// to stop listening:
+eventTree.delete([document.body, "click", "li", handler]);
+
+// to stop listening to all clicks on the body:
+eventTree.delete([document.body, "click"]);
+
+// to stop listening to all events on the body:
+eventTree.delete([document.body]);
+```
+
+
+
+
+In this structure, items will be stored like:
