@@ -188,8 +188,3 @@ eventTree.delete([document.body, "click"]);
 // to stop listening to all events on the body:
 eventTree.delete([document.body]);
 ```
-
-
-
-
-In this structure, items will be stored like:

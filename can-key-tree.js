@@ -2,7 +2,7 @@ var reflect = require("can-reflect");
 
 function isBuiltInPrototype(obj) {
     return (obj === Object.prototype) || (Object.prototype.toString.call(obj) !== '[object Object]' &&
-			Object.prototype.toString.call(obj).indexOf('[object ') !== -1)
+			Object.prototype.toString.call(obj).indexOf('[object ') !== -1);
 }
 
 
@@ -122,7 +122,7 @@ function getDepth(root, level) {
         return 0;
     } else {
         var count = 0;
-        reflect.each(root, function(value, key){
+        reflect.each(root, function(value){
             count += getDepth(value, level - 1);
         });
         return count;
