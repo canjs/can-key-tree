@@ -34,35 +34,35 @@ function handler1(){}
 function handler2(){}
 function handler3(){}
 
-keyTree.add(["li","click", handler1]);
-keyTree.add(["li","click", handler2]);
-keyTree.add(["li","dblclick", handler3]);
+keyTree.add(["click","li", handler1]);
+keyTree.add(["click","li", handler2]);
+keyTree.add(["click","span", handler3]);
 ```
 
 The `keyTree` data structure will look like:
 
 ```js
 {
-    "li": {
-        "click": [handler1, handler2],
-        "dblclick": [handler3]
+    "click": {
+        "li": [handler1, handler2],
+        "span": [handler3]
     }
 }
 ```
 
 #### `.get(keys)`
 
-To get the `li` `click` handlers, use `.get`:
+To get all the `li` `click` handlers, use `.get`:
 
 ```js
-keyTree.get(["li","click"]) //-> [handler1, handler2]
+keyTree.get(["click","li"]) //-> [handler1, handler2]
 ```
 
-To get all `li` handlers, use `.get`:
+To get all `click` handlers, you can also use `.get`:
 
 
 ```js
-keyTree.get(["li"]) //-> [handler1, handler2, handler3]
+keyTree.get(["click"]) //-> [handler1, handler2, handler3]
 ```
 
 #### `.delete(keys)`
@@ -77,17 +77,17 @@ The `keyTree` data structure will look like:
 
 ```js
 {
-    "li": {
-        "click": [handler1],
-        "dblclick": [handler3]
+    "click": {
+        "li": [handler1],
+        "span": [handler3]
     }
 }
 ```
 
-To delete the remaining `li` handlers:
+To delete the remaining `click` handlers:
 
 ```js
-keyTree.delete(["click","li"]);
+keyTree.delete(["click"]);
 ```
 
 The `keyTree` data structure will look like:
