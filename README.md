@@ -102,13 +102,27 @@ Often, when a node is created, there needs to be some initial setup, and when a
 node is empty, some teardown.
 
 This can be achieved by creating custom types.  For example, perhaps we want to
-build an event delegation system.  We can do that as follows:
+build an event delegation system where we can delegate from an element like:
+
+```js
+eventTree.add([document.body, "click", "li", handler]);
+```
+
+And remove that handler like:
+
+```js
+eventTree.delete([document.body, "click", "li", handler])
+```
+
+
+We can do that as follows:
 
 ```js
 // Create an event handler type.
 var Delegator = function(parentKey){
-    // Save the element this EventHandler object is created for.
     // Custom constructors get called with their parentKey.
+    // In this case, the `parentKey` is the element we will
+    // delegate from.
     this.element = parentKey;
     // the nested data `{click: [handlers...], dblclick: [handlers...]}`
     this.events = {};
