@@ -162,3 +162,48 @@ if(typeof document !== "undefined" && document.body && document.body.matches) {
     });
 
 }
+
+QUnit.test(".getNode and .get", function(){
+    var keyTree = new KeyTree([Object, Object, Array]);
+
+    function handler1(){}
+    function handler2(){}
+
+
+    keyTree.add(["click","li", handler1] );
+    keyTree.add(["click","li", handler2] );
+    keyTree.add(["click","span", handler2] );
+
+
+    QUnit.deepEqual( keyTree.getNode(["click"]), {
+        li: [handler1, handler2],
+        span: [handler2]
+    }, ".getNode works");
+
+    QUnit.deepEqual( keyTree.get(["click"]), [handler1, handler2, handler2], ".get works");
+});
+
+QUnit.test("lifecycle callbacks", function(){
+    var calls = 0;
+    var keyTree = new KeyTree([Object, Object, Array],{
+        onFirst: function(){
+            QUnit.equal(calls, 1, "called when the first node is added");
+        },
+        onEmpty: function(){
+            QUnit.equal(calls, 3, "called when all nodes are removed");
+        }
+    });
+
+    function handler1(){}
+    function handler2(){}
+
+
+
+    calls++;
+    keyTree.add(["click","li", handler1] );
+    calls++;
+    keyTree.add(["click","li", handler2] );
+    calls++;
+    keyTree.delete([]);
+
+});
