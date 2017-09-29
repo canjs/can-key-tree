@@ -19,7 +19,7 @@ will be used as the nodes of the tree. The following creates a tree structure
 
 
 ```js
-var keyTree = new KeyTree([Object,Object,Array])
+var keyTree = new KeyTree([Object,Object,Array],{onFirst, onEmpty})
 ```
 
 Once you've created a `keyTree`, you can `.add`, `.delete` and `.get` values from
