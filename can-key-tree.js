@@ -20,6 +20,10 @@ var KeyTree = function(treeStructure, callbacks){
 };
 
 KeyTree.prototype.add = function(keys) {
+    if(keys.length > this.treeStructure.length) {
+        throw new Error("can-key-tree: Can not add path deeper than tree.");
+    }
+
     var place = this.root;
     var rootWasEmpty = reflect.size( this.root ) === 0;
     for(var i = 0; i < keys.length - 1 ; i++) {
@@ -113,7 +117,7 @@ KeyTree.prototype.delete = function(keys){
     for(var i = 0; i < keys.length - 1 ; i++) {
         var key = keys[i];
         var store = reflect.getKeyValue(place, key);
-        if(!store) {
+        if(store === undefined) {
             return false;
         } else {
             roots.push(store);
@@ -135,8 +139,14 @@ KeyTree.prototype.delete = function(keys){
         clear(place, 0, this.treeStructure.length - 1);
     } else {
         // we need to recursively clear the node's values
-        clear(reflect.getKeyValue(place, lastKey), keys.length, this.treeStructure.length - 1);
-        reflect.deleteKeyValue(place, lastKey);
+        var branch = reflect.getKeyValue(place, lastKey);
+        if(branch !== undefined) {
+            clear(branch, keys.length, this.treeStructure.length - 1);
+            reflect.deleteKeyValue(place, lastKey);
+        } else {
+            return false;
+        }
+
     }
 
     for(i = roots.length - 2; i >= 0 ; i--) {

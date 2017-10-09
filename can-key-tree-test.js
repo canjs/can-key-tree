@@ -207,3 +207,22 @@ QUnit.test("lifecycle callbacks", function(){
     keyTree.delete([]);
 
 });
+
+QUnit.test("handle missing keys", function(){
+    var keyTree = new KeyTree([Object, Array]);
+
+
+    QUnit.notOk( keyTree.delete(["abc"]) );
+    QUnit.ok(true, "no error");
+});
+
+QUnit.test("add too deep (#3)", function(){
+    var keyTree = new KeyTree([Object, Array]);
+
+    try {
+        keyTree.add([1,2,3,4,5]);
+    } catch (e) {
+        QUnit.equal(e.message,"can-key-tree: Can not add path deeper than tree.");
+    }
+
+});
