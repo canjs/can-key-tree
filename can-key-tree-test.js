@@ -226,3 +226,9 @@ QUnit.test("add too deep (#3)", function(){
     }
 
 });
+
+QUnit.test("empty deep", function(){
+    var keyTree = new KeyTree([Object, Object, Object, Array]);
+    QUnit.deepEqual( keyTree.get("foo"), []);
+
+});

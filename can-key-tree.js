@@ -52,6 +52,9 @@ KeyTree.prototype.add = function(keys) {
     }
 };
 function getDeep(item, items, depth, maxDepth) {
+    if(!item) {
+        return;
+    }
     if(maxDepth === depth) {
         if(reflect.isMoreListLikeThanMapLike(item)) {
             // remove each item
