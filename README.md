@@ -19,7 +19,7 @@ will be used as the nodes of the tree. The following creates a tree structure
 
 
 ```js
-var keyTree = new KeyTree([Object,Object,Array],{onFirst, onEmpty})
+var keyTree = new KeyTree([Object, Object, Array], {onFirst, onEmpty})
 ```
 
 Once you've created a `keyTree`, you can `.add`, `.delete` and `.get` values from
@@ -34,9 +34,9 @@ function handler1(){}
 function handler2(){}
 function handler3(){}
 
-keyTree.add(["click","li", handler1]);
-keyTree.add(["click","li", handler2]);
-keyTree.add(["click","span", handler3]);
+keyTree.add(["click", "li", handler1]);
+keyTree.add(["click", "li", handler2]);
+keyTree.add(["click", "span", handler3]);
 ```
 
 The `keyTree` data structure will look like:
@@ -55,7 +55,7 @@ The `keyTree` data structure will look like:
 To get all the `li` `click` handlers, use `.get`:
 
 ```js
-keyTree.get(["click","li"]) //-> [handler1, handler2]
+keyTree.get(["click", "li"]) //-> [handler1, handler2]
 ```
 
 To get all `click` handlers, you can also use `.get`:
@@ -70,7 +70,7 @@ keyTree.get(["click"]) //-> [handler1, handler2, handler3]
 To delete a handler, use `.delete`:
 
 ```js
-keyTree.delete(["click","li", handler1]);
+keyTree.delete(["click", "li", handler1]);
 ```
 
 The `keyTree` data structure will look like:
@@ -78,7 +78,7 @@ The `keyTree` data structure will look like:
 ```js
 {
     "click": {
-        "li": [handler1],
+        "li": [handler2],
         "span": [handler3]
     }
 }
