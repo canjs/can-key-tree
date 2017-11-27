@@ -1,5 +1,11 @@
 var reflect = require( "can-reflect" );
 
+// ## Helpers
+// The following implement helper functions useful to `can-key-tree`'s main methods.
+
+// ### isBuiltInPrototype
+// Returns if `obj` is the prototype of a built-in JS type like `Map`.
+// Built in types' `toString` returns `[object TYPENAME]`.
 function isBuiltInPrototype ( obj ) {
 	if ( obj === Object.prototype ) {
 		return true;
@@ -10,6 +16,62 @@ function isBuiltInPrototype ( obj ) {
 	return isNotObjObj && isObjSomething;
 }
 
+// ### getDeepSize
+// Recursively returns the number of leaf values below `root` node.
+function getDeepSize ( root, level ) {
+	if ( level === 0 ) {
+		return reflect.size( root );
+	} else if ( reflect.size( root ) === 0 ) {
+		return 0;
+	} else {
+		var count = 0;
+		reflect.each( root, function ( value ) {
+			count += getDeepSize( value, level - 1 );
+		});
+		return count;
+	}
+}
+
+// ### getDeep
+// Adds all leaf values under `node` to `items`.
+// `depth` is how deep `node` is in the tree.
+// `maxDepth` is the total depth of the tree structure.
+function getDeep ( node, items, depth, maxDepth ) {
+	if ( !node ) {
+		return;
+	}
+	if ( maxDepth === depth ) {
+		if ( reflect.isMoreListLikeThanMapLike( node ) ) {
+			reflect.addValues( items, reflect.toArray( node ) );
+		} else {
+			throw new Error( "can-key-tree: Map-type leaf containers are not supported yet." );
+		}
+	} else {
+		reflect.each( node, function ( value ) {
+			getDeep( value, items, depth + 1, maxDepth );
+		});
+	}
+}
+
+// ### clearDeep
+// Recursively removes value from all child nodes of `node`.
+function clearDeep ( node, depth, maxDepth ) {
+	if ( maxDepth === depth ) {
+		if ( reflect.isMoreListLikeThanMapLike( node ) ) {
+			reflect.removeValues( node, reflect.toArray( node ) );
+		} else {
+			throw new Error( "can-key-tree: Map-type leaf containers are not supported yet." );
+		}
+	} else {
+		reflect.each( node, function ( value, key ) {
+			clearDeep( value, depth+1, maxDepth );
+			reflect.deleteKeyValue( node, key );
+		});
+	}
+}
+
+// ## KeyTree
+// Creates an instance of the KeyTree.
 var KeyTree = function ( treeStructure, callbacks ) {
 	this.callbacks = callbacks || {};
 
@@ -22,176 +84,152 @@ var KeyTree = function ( treeStructure, callbacks ) {
 	}
 };
 
+// ## Methods
+reflect.assign(KeyTree.prototype,{
+    // ### Add
+    add: function ( keys ) {
+    	if ( keys.length > this.treeStructure.length ) {
+    		throw new Error( "can-key-tree: Can not add path deeper than tree." );
+    	}
+        // The place we will add the final leaf value.
+    	var place = this.root;
 
-KeyTree.prototype.add = function ( keys ) {
-	if ( keys.length > this.treeStructure.length ) {
-		throw new Error( "can-key-tree: Can not add path deeper than tree." );
-	}
+        // Record if the root was empty so we know to call `onFirst`.
+    	var rootWasEmpty = reflect.size( this.root ) === 0;
 
-	var place = this.root;
-	var rootWasEmpty = reflect.size( this.root ) === 0;
-	for ( var i = 0; i < keys.length - 1; i++ ) {
-		var key = keys[i];
-		var store = reflect.getKeyValue( place, key );
-		if ( !store ) {
-			var Constructor = this.treeStructure[i + 1];
-			if ( isBuiltInPrototype( Constructor.prototype ) ) {
-				store = new Constructor();
-			} else {
-				store = new Constructor( key );
-			}
+        // For each key, try to get the corresponding childNode.
+        for ( var i = 0; i < keys.length - 1; i++ ) {
+    		var key = keys[i];
+    		var childNode = reflect.getKeyValue( place, key );
+    		if ( !childNode ) {
+                // If there is no childNode, create it and add it to the parent node.
+    			var Constructor = this.treeStructure[i + 1];
+    			if ( isBuiltInPrototype( Constructor.prototype ) ) {
+    				childNode = new Constructor();
+    			} else {
+    				childNode = new Constructor( key );
+    			}
+    			reflect.setKeyValue( place, key, childNode );
+    		}
+    		place = childNode;
+    	}
 
-			reflect.setKeyValue( place, key, store );
-		}
-		place = store;
-	}
-	if ( reflect.isMoreListLikeThanMapLike( place ) ) {
-		reflect.addValues( place, [keys[keys.length - 1]] );
-	} else {
-		// only containers supported at the end
-		throw new Error( "can-key-tree: Map types are not supported yet." );
-	}
-	if ( rootWasEmpty && this.callbacks.onFirst ) {
-		this.callbacks.onFirst.call( this );
-	}
+        // Add the final leaf value in the tree.
+    	if ( reflect.isMoreListLikeThanMapLike( place ) ) {
+    		reflect.addValues( place, [keys[keys.length - 1]] );
+    	} else {
+    		throw new Error( "can-key-tree: Map types are not supported yet." );
+    	}
 
-	return this;
-};
+        // Callback `onFirst` if appropriate.
+    	if ( rootWasEmpty && this.callbacks.onFirst ) {
+    		this.callbacks.onFirst.call( this );
+    	}
 
-function getDeep ( item, items, depth, maxDepth ) {
-	if ( !item ) {
-		return;
-	}
-	if ( maxDepth === depth ) {
-		if ( reflect.isMoreListLikeThanMapLike( item ) ) {
-			// add each item
-			reflect.addValues( items, reflect.toArray( item ) );
-		} else {
-			// only containers supported at the end
-			throw new Error( "can-key-tree: Map types are not supported yet." );
-		}
-	} else {
-		reflect.each( item, function ( value ) {
-			getDeep( value, items, depth + 1, maxDepth );
-		});
-	}
-}
+    	return this;
+    },
+    // ### getNode
+    getNode: function ( keys ) {
+        var node = this.root;
+        // For each key, try to read the child node.
+        // If a child is not found, return `undefined`.
+        for ( var i = 0; i < keys.length; i++ ) {
+            var key = keys[i];
+            node = reflect.getKeyValue( node, key );
+            if ( !node ) {
+                return;
+            }
+        }
+        return node;
+    },
+    // ### get
+    get: function ( keys ) {
+        // Get the node specified by keys.
+    	var node = this.getNode( keys );
 
+        // If it's a leaf, return it.
+    	if ( this.treeStructure.length === keys.length ) {
+    		return node;
+    	} else {
+    		// Otherwise, create a container for leaf values and
+            // recursively walk the node's children.
+    		var Type = this.treeStructure[this.treeStructure.length - 1];
+    		var items = new Type();
+    		getDeep( node, items, keys.length, this.treeStructure.length - 1 );
+    		return items;
+    	}
+    },
+    // ### delete
+    delete: function ( keys ) {
 
-KeyTree.prototype.get = function ( keys ) {
-	var place = this.getNode( keys );
+        // `parentNode` will eventually be the parent nodde of the
+        // node specified by keys.
+        var parentNode = this.root,
+            // The nodes traversed to the node specified by `keys`.
+            path = [this.root],
+            lastKey = keys[keys.length - 1];
 
-	if ( this.treeStructure.length === keys.length ) {
-		return place;
-	} else {
-		// recurse deep
-		var Type = this.treeStructure[this.treeStructure.length - 1];
-		var items = new Type();
-		getDeep( place, items, keys.length, this.treeStructure.length - 1 );
-		return items;
-	}
-};
-
-
-KeyTree.prototype.getNode = function ( keys ) {
-	var place = this.root;
-	for ( var i = 0; i < keys.length; i++ ) {
-		var key = keys[i];
-		var store = reflect.getKeyValue( place, key );
-		if ( !store ) {
-			return;
-		}
-		place = store;
-	}
-	return place;
-};
-
-function clear ( item, depth, maxDepth ) {
-	if ( maxDepth === depth ) {
-		if ( reflect.isMoreListLikeThanMapLike( item ) ) {
-			// remove each item
-			reflect.removeValues( item, reflect.toArray( item ) );
-		} else {
-			// only containers supported at the end
-			throw new Error( "can-key-tree: Map types are not supported yet." );
-		}
-	} else {
-		reflect.each( item, function ( value, key ) {
-			clear( value, depth+1, maxDepth );
-			reflect.deleteKeyValue( item, key );
-		});
-	}
-}
+        // Set parentNode to the node specified by keys
+        // and record the nodes in `path`.
+        for ( var i = 0; i < keys.length - 1; i++ ) {
+    		var key = keys[i];
+    		var childNode = reflect.getKeyValue( parentNode, key );
+    		if ( childNode === undefined ) {
+    			return false;
+    		} else {
+    			path.push( childNode );
+    		}
+    		parentNode = childNode;
+    	}
 
 
-KeyTree.prototype.delete = function ( keys ) {
-	var place = this.root;
-	var roots = [this.root];
-	// find location of the removal of the last key ...
-	for ( var i = 0; i < keys.length - 1; i++ ) {
-		var key = keys[i];
-		var store = reflect.getKeyValue( place, key );
-		if ( store === undefined ) {
-			return false;
-		} else {
-			roots.push( store );
-		}
-		place = store;
-	}
+        // Depending on which keys were specified and the content of the
+        // key, do various cleanups ...
+        if ( !keys.length ) {
+            // If there are no keys, recursively clear the entire tree.
+    		clearDeep( parentNode, 0, this.treeStructure.length - 1 );
+    	}
+        else if ( keys.length === this.treeStructure.length ) {
+            // If removing a leaf, remove that value.
+    		if ( reflect.isMoreListLikeThanMapLike( parentNode ) ) {
+    			reflect.removeValues( parentNode, [lastKey] );
+    		} else {
+    			throw new Error( "can-key-tree: Map types are not supported yet." );
+    		}
+    	}
+        else {
+            // If removing a node 'within' the tree, recursively clear
+            // that node and then delete the key from parent to node.
+            var nodeToRemove = reflect.getKeyValue( parentNode, lastKey );
+    		if ( nodeToRemove !== undefined ) {
+    			clearDeep( nodeToRemove, keys.length, this.treeStructure.length - 1 );
+    			reflect.deleteKeyValue( parentNode, lastKey );
+    		} else {
+    			return false;
+    		}
+    	}
 
-	// `place` is now the object we are removing the last key from
-	var lastKey = keys[keys.length - 1];
-	// if we are removing a leaf
-	if ( keys.length === this.treeStructure.length ) {
-		if ( reflect.isMoreListLikeThanMapLike( place ) ) {
-			reflect.removeValues( place, [lastKey] );
-		} else {
-			// only containers supported at the end
-			throw new Error( "can-key-tree: Map types are not supported yet." );
-		}
-	} else if ( !keys.length ) {
-		clear( place, 0, this.treeStructure.length - 1 );
-	} else {
-		// we need to recursively clear the node's values
-		var branch = reflect.getKeyValue( place, lastKey );
-		if ( branch !== undefined ) {
-			clear( branch, keys.length, this.treeStructure.length - 1 );
-			reflect.deleteKeyValue( place, lastKey );
-		} else {
-			return false;
-		}
-	}
-
-	for ( i = roots.length - 2; i >= 0; i-- ) {
-		if ( reflect.size( place ) === 0 ) {
-			place = roots[i];
-			reflect.deleteKeyValue( place, keys[i] );
-		} else {
-			break;
-		}
-	}
-	if ( this.callbacks.onEmpty && reflect.size( this.root ) === 0 ) {
-		this.callbacks.onEmpty.call( this );
-	}
-	return true;
-};
-
-function getDepth ( root, level ) {
-	if ( level === 0 ) {
-		return reflect.size( root );
-	} else if ( reflect.size( root ) === 0 ) {
-		return 0;
-	} else {
-		var count = 0;
-		reflect.each( root, function ( value ) {
-			count += getDepth( value, level - 1 );
-		});
-		return count;
-	}
-}
-
-KeyTree.prototype.size = function () {
-	return getDepth( this.root, this.treeStructure.length - 1 );
-};
+        // After deleting the node, check if its parent is empty and
+        // recursively prune parent nodes that are now empty.
+    	for ( i = path.length - 2; i >= 0; i-- ) {
+    		if ( reflect.size( parentNode ) === 0 ) {
+    			parentNode = path[i];
+    			reflect.deleteKeyValue( parentNode, keys[i] );
+    		} else {
+    			break;
+    		}
+    	}
+        // Call `onEmpty` if the tree is now empty.
+    	if ( this.callbacks.onEmpty && reflect.size( this.root ) === 0 ) {
+    		this.callbacks.onEmpty.call( this );
+    	}
+    	return true;
+    },
+    // ### size
+    // Recursively count the number of leaf values.
+    size: function () {
+    	return getDeepSize( this.root, this.treeStructure.length - 1 );
+    }
+});
 
 module.exports = KeyTree;

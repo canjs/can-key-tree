@@ -2,6 +2,7 @@ publish-docs:
 	npm install --no-shrinkwrap
 	git checkout -b gh-pages
 	./node_modules/.bin/docco can-key-tree.js
+	git add -f docs/
 	git fetch
 	git checkout origin/gh-pages
 	git commit -m "Publish docs"

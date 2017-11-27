@@ -51,4 +51,4 @@ The `keyTree` data structure will look like:
 ```
 
 @param {Array} [keys] An array of keys to specify where to delete
-@return {boolean} If the node was found and the delete was successful
+@return {boolean} If the node was found and the delete was successful.
