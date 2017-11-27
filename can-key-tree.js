@@ -22,39 +22,7 @@ var KeyTree = function ( treeStructure, callbacks ) {
 	}
 };
 
-/**
- * @function can-key-tree.prototype.add add
- * @parent can-key-tree.prototype
- *
- * @signature `keyTree.add(keys)`
- *
- * Adds items into the structure and returns the keyTree.
- *
- * ```js
- * var keyTree = new KeyTree( [Object, Object, Array] );
- *
- * function handler1(){}
- * function handler2(){}
- * function handler3(){}
- *
- * keyTree.add(["click", "li", handler1]);
- * keyTree.add(["click", "li", handler2]);
- * keyTree.add(["click", "span", handler3]);
- * ```
- *
- * The `keyTree` data structure will look like:
- * ```js
- * {
- *     "click": {
- *         "li": [handler1, handler2],
- *         "span": [handler3]
- *     }
- * }
- * ```
- *
- * @param {Array} [keys] An array of keys to populate the tree
- * @return {KeyTree} The keyTree
- */
+
 KeyTree.prototype.add = function ( keys ) {
 	if ( keys.length > this.treeStructure.length ) {
 		throw new Error( "can-key-tree: Can not add path deeper than tree." );
@@ -109,43 +77,7 @@ function getDeep ( item, items, depth, maxDepth ) {
 	}
 }
 
-/**
- * @function can-key-tree.prototype.get get
- * @parent can-key-tree.prototype
- *
- * @signature `keyTree.get(keys)`
- *
- * Return all the leafs from the keyTree under the specified `keys`.
- *
- * Given this setup:
- *
- * ```js
- * var keyTree = new KeyTree( [Object, Object, Array] );
- *
- * function handler1(){}
- * function handler2(){}
- * function handler3(){}
- *
- * keyTree.add(["click", "li", handler1]);
- * keyTree.add(["click", "li", handler2]);
- * keyTree.add(["click", "span", handler3]);
- * ```
- *
- * To get all the `li` `click` handlers, use `.get`:
- *
- * ```js
- * keyTree.get(["click", "li"]) //-> [handler1, handler2]
- * ```
- *
- * To get all `click` handlers, you can also use `.get`:
- *
- * ```js
- * keyTree.get(["click"]) //-> [handler1, handler2, handler3]
- * ```
- *
- * @param {Array} [keys] An array of keys to specify where to start recursively getting leafs from.
- * @return {Array} The leafs from keyTree under the specified `keys` path.
- */
+
 KeyTree.prototype.get = function ( keys ) {
 	var place = this.getNode( keys );
 
@@ -160,37 +92,7 @@ KeyTree.prototype.get = function ( keys ) {
 	}
 };
 
-/**
- * @function can-key-tree.prototype.getNode getNode
- * @parent can-key-tree.prototype
- *
- * @signature `keyTree.getNode(keys)`
- *
- * Return the node from the keyTree specified by `keys`.
- *
- * Given this setup:
- *
- * ```js
- * var keyTree = new KeyTree( [Object, Object, Array] );
- *
- * function handler1(){}
- * function handler2(){}
- * function handler3(){}
- *
- * keyTree.add(["click", "li", handler1]);
- * keyTree.add(["click", "li", handler2]);
- * keyTree.add(["click", "span", handler3]);
- * ```
- *
- * To get all the object at `click`, use `.getNode`:
- *
- * ```js
- * keyTree.getNode(["click"]) //-> { li: [handler1, handler2], span: [handler2] }
- * ```
- *
- * @param {Array} [keys] An array of keys to specify where to pull the node from.
- * @return {Object|Array|Value} The node from the keyTree specified by the 'keys' path.
- */
+
 KeyTree.prototype.getNode = function ( keys ) {
 	var place = this.root;
 	for ( var i = 0; i < keys.length; i++ ) {
@@ -221,60 +123,7 @@ function clear ( item, depth, maxDepth ) {
 	}
 }
 
-/**
- * @function can-key-tree.prototype.delete delete
- * @parent can-key-tree.prototype
- *
- * @signature `keyTree.delete(keys)`
- *
- * Delete everything from the keyTree at the specified `keys`.
- *
- * Given this setup:
- *
- * ```js
- * var keyTree = new KeyTree( [Object, Object, Array] );
- *
- * function handler1(){}
- * function handler2(){}
- * function handler3(){}
- *
- * keyTree.add(["click", "li", handler1]);
- * keyTree.add(["click", "li", handler2]);
- * keyTree.add(["click", "span", handler3]);
- * ```
- *
- * To delete a handler, use `.delete`:
- *
- * ```js
- * keyTree.delete(["click", "li", handler1]);
- * ```
- *
- * The `keyTree` data structure will look like:
- *
- * ```js
- * {
- *     "click": {
- *         "li": [handler2],
- *         "span": [handler3]
- *     }
- * }
- * ```
- *
- * To delete the remaining `click` handlers:
- *
- * ```js
- * keyTree.delete(["click"]);
- * ```
- *
- * The `keyTree` data structure will look like:
- *
- * ```js
- * {}
- * ```
- *
- * @param {Array} [keys] An array of keys to specify where to delete
- * @return {boolean} If the node was found and the delete was successful
- */
+
 KeyTree.prototype.delete = function ( keys ) {
 	var place = this.root;
 	var roots = [this.root];
@@ -341,28 +190,6 @@ function getDepth ( root, level ) {
 	}
 }
 
-/**
- * @function can-key-tree.prototype.size size
- * @parent can-key-tree.prototype
- *
- * @signature `keyTree.size()`
- *
- * Returns the size of the keyTree
- *
- * ```js
- * var keyTree = new KeyTree( [Object, Object, Array] );
- *
- * function handler1 () {}
- * function handler2 () {}
- * keyTree.size(); //-> 0
- *
- * keyTree.add( ["click", "li", handler1] );
- * keyTree.add( ["click", "li", handler2] );
- * keyTree.size(); //-> 2
- * ```
- *
- * @return {Number} The size of the keyTree
- */
 KeyTree.prototype.size = function () {
 	return getDepth( this.root, this.treeStructure.length - 1 );
 };
