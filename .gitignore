@@ -27,6 +27,5 @@ node_modules
 # Users Environment Variables
 .lock-wscript
 
-docs/
 dist/
 package-lock.json
