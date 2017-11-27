@@ -260,3 +260,9 @@ eventTree.delete([document.body]);
 
 
 ## How it works
+
+`can-key-tree`'s' commented source can be found [here](https://canjs.github.io/can-key-tree/docs/can-key-tree.html).
+
+On a high level, `KeyTree` instances maintain a `this.root` map-type whose keys point to instances of other map-types.  Those
+keys eventually point to some list-type instance that contains a list of the leaf-values added to the tree.  `KeyTree`'s
+methods walk down the tree structure and use [can-reflect] to perform operations on it.
