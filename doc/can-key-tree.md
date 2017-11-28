@@ -266,3 +266,7 @@ eventTree.delete([document.body]);
 On a high level, `KeyTree` instances maintain a `this.root` map-type whose keys point to instances of other map-types.  Those
 keys eventually point to some list-type instance that contains a list of the leaf-values added to the tree.  `KeyTree`'s
 methods walk down the tree structure and use [can-reflect] to perform operations on it.
+
+Watch [this overview video](https://www.youtube.com/watch?v=qVVB2MOO-yM) on `can-key-tree`.
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/qVVB2MOO-yM" frameborder="0" allowfullscreen></iframe>
