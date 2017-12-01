@@ -14,7 +14,7 @@ creates a keyTree whose root node will be an Object and child nodes will
 be Arrays:
 
 ```js
-var cities = new KeyTree([Object,Array]);
+var cities = new KeyTree([Object, Array]);
 ```
 
 Once you've created a `keyTree`, you can [can-key-tree.prototype.add],
@@ -22,7 +22,7 @@ Once you've created a `keyTree`, you can [can-key-tree.prototype.add],
 from it. The following `"Chicago"` to the tree:
 
 ```js
-cities.add(["Illinois","Chicago"])
+cities.add(["Illinois", "Chicago"])
 ```
 
 Internally, `cities` structure looks like:
@@ -72,7 +72,7 @@ storing event handlers organized by key and [can-queues event queue].  Its use o
 means it can simplify complex patterns such as implementing event delegation as shown in the [Advanced Use](#AdvancedUse)
 section below.
 
-When you are adding, removing and retrieving items from a nested structure, `can-key-tree` can likely help.
+When you are adding, removing, and retrieving items from a nested structure, `can-key-tree` can likely help.
 
 ## Use
 
