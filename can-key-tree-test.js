@@ -224,3 +224,37 @@ QUnit.test("empty deep", function () {
 	var keyTree = new KeyTree( [Object, Object, Object, Array] );
 	QUnit.deepEqual( keyTree.get( "foo" ), [] );
 });
+
+QUnit.test("delete can get path of nodes deleted", function(){
+	var keyTree = new KeyTree([Object, Object,Array]);
+	var keys = [
+		["first","mutate", "abc"],
+		["first",'notify',"def"]
+	];
+
+	keyTree.add(keys[0]);
+	keyTree.add(keys[1]);
+	var KEYS = [];
+	keyTree.delete([], function(event,queue, name){
+		KEYS.push([event, queue, name]);
+	});
+	QUnit.deepEqual(KEYS, keys, "got nodes that were deleted([])");
+
+
+	keyTree.add(keys[0]);
+	keyTree.add(keys[1]);
+	KEYS = [];
+	keyTree.delete(["first"], function(event,queue, name){
+		KEYS.push([event, queue, name]);
+	});
+	QUnit.deepEqual(KEYS, keys, "got nodes that were deleted([key])");
+
+
+	keyTree.add(keys[0]);
+	keyTree.add(keys[1]);
+	KEYS = [];
+	keyTree.delete(["first","mutate","abc"], function(event,queue, name){
+		KEYS.push([event, queue, name]);
+	});
+	QUnit.deepEqual(KEYS, [keys[0]], "got nodes that were deleted([key])");
+});

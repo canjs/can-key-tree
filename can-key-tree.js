@@ -55,16 +55,22 @@ function getDeep ( node, items, depth, maxDepth ) {
 
 // ### clearDeep
 // Recursively removes value from all child nodes of `node`.
-function clearDeep ( node, depth, maxDepth ) {
-	if ( maxDepth === depth ) {
+function clearDeep ( node, keys, maxDepth, deleteHandler ) {
+	if ( maxDepth === keys.length ) {
 		if ( reflect.isMoreListLikeThanMapLike( node ) ) {
-			reflect.removeValues( node, reflect.toArray( node ) );
+			var valuesToRemove = reflect.toArray( node );
+			if(deleteHandler) {
+				valuesToRemove.forEach(function(value){
+					deleteHandler.apply(null, keys.concat(value));
+				});
+			}
+			reflect.removeValues( node, valuesToRemove );
 		} else {
 			throw new Error( "can-key-tree: Map-type leaf containers are not supported yet." );
 		}
 	} else {
 		reflect.each( node, function ( value, key ) {
-			clearDeep( value, depth+1, maxDepth );
+			clearDeep( value, keys.concat(key), maxDepth, deleteHandler );
 			reflect.deleteKeyValue( node, key );
 		});
 	}
@@ -160,7 +166,7 @@ reflect.assign(KeyTree.prototype,{
     	}
     },
     // ### delete
-    delete: function ( keys ) {
+    delete: function ( keys, deleteHandler ) {
 
         // `parentNode` will eventually be the parent nodde of the
         // node specified by keys.
@@ -187,11 +193,14 @@ reflect.assign(KeyTree.prototype,{
         // key, do various cleanups ...
         if ( !keys.length ) {
             // If there are no keys, recursively clear the entire tree.
-    		clearDeep( parentNode, 0, this.treeStructure.length - 1 );
+    		clearDeep( parentNode, [], this.treeStructure.length - 1, deleteHandler );
     	}
         else if ( keys.length === this.treeStructure.length ) {
             // If removing a leaf, remove that value.
     		if ( reflect.isMoreListLikeThanMapLike( parentNode ) ) {
+				if(deleteHandler) {
+					deleteHandler.apply(null, keys.concat(lastKey));
+				}
     			reflect.removeValues( parentNode, [lastKey] );
     		} else {
     			throw new Error( "can-key-tree: Map types are not supported yet." );
@@ -202,7 +211,7 @@ reflect.assign(KeyTree.prototype,{
             // that node and then delete the key from parent to node.
             var nodeToRemove = reflect.getKeyValue( parentNode, lastKey );
     		if ( nodeToRemove !== undefined ) {
-    			clearDeep( nodeToRemove, keys.length, this.treeStructure.length - 1 );
+    			clearDeep( nodeToRemove, keys, this.treeStructure.length - 1, deleteHandler );
     			reflect.deleteKeyValue( parentNode, lastKey );
     		} else {
     			return false;
