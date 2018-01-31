@@ -26,16 +26,6 @@
     "develop": "done-serve --static --develop --port 8080"
   },
   "main": "dist/cjs/can-key-tree",
-  "browser": {
-    "transform": [
-      "cssify"
-    ]
-  },
-  "browserify": {
-    "transform": [
-      "cssify"
-    ]
-  },
   "keywords": [
     "CanJS",
     "DoneJS",
