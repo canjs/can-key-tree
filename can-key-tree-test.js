@@ -258,3 +258,28 @@ QUnit.test("delete can get path of nodes deleted", function(){
 	});
 	QUnit.deepEqual(KEYS, [keys[0]], "got nodes that were deleted([key])");
 });
+
+
+QUnit.test('isEmpty', function () {
+	var keyTree = new KeyTree( [Object, Object, Array] );
+
+	function handler1 () {}
+	function handler2 () {}
+
+	QUnit.equal( keyTree.isEmpty(), true, "empty" );
+
+	keyTree.add( ["click", "li", handler1] );
+	keyTree.add( ["click", "li", handler2] );
+	QUnit.equal( keyTree.isEmpty(), false, "2" );
+
+	QUnit.deepEqual( keyTree.get( ["click", "li"] ), [handler1, handler2] );
+
+	keyTree.delete( ["click", "li", handler1] );
+	QUnit.equal( keyTree.isEmpty(), false, "1" );
+
+	keyTree.delete( ["click", "li", handler1] );
+	QUnit.equal( keyTree.isEmpty(), false, "empty" );
+
+	keyTree.delete( ["click", "li", handler2] );
+	QUnit.equal( keyTree.isEmpty(), true, "empty" );
+});

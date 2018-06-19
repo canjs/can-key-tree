@@ -79,15 +79,16 @@ function clearDeep ( node, keys, maxDepth, deleteHandler ) {
 // ## KeyTree
 // Creates an instance of the KeyTree.
 var KeyTree = function ( treeStructure, callbacks ) {
-	this.callbacks = callbacks || {};
-
-	this.treeStructure = treeStructure;
 	var FirstConstructor = treeStructure[0];
 	if ( reflect.isConstructorLike( FirstConstructor ) ) {
 		this.root = new FirstConstructor();
 	} else {
 		this.root = FirstConstructor;
 	}
+	this.callbacks = callbacks || {};
+	this.treeStructure = treeStructure;
+	// An extra bit of state held for performance
+	this.empty = true;
 };
 
 // ## Methods
@@ -101,7 +102,7 @@ reflect.assign(KeyTree.prototype,{
     	var place = this.root;
 
         // Record if the root was empty so we know to call `onFirst`.
-    	var rootWasEmpty = reflect.size( this.root ) === 0;
+    	var rootWasEmpty = this.empty === true;
 
         // For each key, try to get the corresponding childNode.
         for ( var i = 0; i < keys.length - 1; i++ ) {
@@ -128,8 +129,12 @@ reflect.assign(KeyTree.prototype,{
     	}
 
         // Callback `onFirst` if appropriate.
-    	if ( rootWasEmpty && this.callbacks.onFirst ) {
-    		this.callbacks.onFirst.call( this );
+    	if ( rootWasEmpty ) {
+			this.empty = false;
+			if(this.callbacks.onFirst) {
+				this.callbacks.onFirst.call( this );
+			}
+
     	}
 
     	return this;
@@ -229,8 +234,11 @@ reflect.assign(KeyTree.prototype,{
     		}
     	}
         // Call `onEmpty` if the tree is now empty.
-    	if ( this.callbacks.onEmpty && reflect.size( this.root ) === 0 ) {
-    		this.callbacks.onEmpty.call( this );
+    	if (  reflect.size( this.root ) === 0 ) {
+			this.empty = true;
+			if(this.callbacks.onEmpty) {
+				this.callbacks.onEmpty.call( this );
+			}
     	}
     	return true;
     },
@@ -238,7 +246,10 @@ reflect.assign(KeyTree.prototype,{
     // Recursively count the number of leaf values.
     size: function () {
     	return getDeepSize( this.root, this.treeStructure.length - 1 );
-    }
+    },
+	isEmpty: function(){
+		return this.empty;
+	}
 });
 
 module.exports = KeyTree;
