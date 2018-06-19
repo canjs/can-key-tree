@@ -10,38 +10,38 @@ Delete everything from the keyTree at the specified `keys`.
 Given this setup:
 
 ```js
-var keyTree = new KeyTree( [Object, Object, Array] );
+const keyTree = new KeyTree( [ Object, Object, Array ] );
 
-function handler1(){}
-function handler2(){}
-function handler3(){}
+function handler1() {}
+function handler2() {}
+function handler3() {}
 
-keyTree.add(["click", "li", handler1]);
-keyTree.add(["click", "li", handler2]);
-keyTree.add(["click", "span", handler3]);
+keyTree.add( [ "click", "li", handler1 ] );
+keyTree.add( [ "click", "li", handler2 ] );
+keyTree.add( [ "click", "span", handler3 ] );
 ```
 
 To delete a handler, use `.delete`:
 
 ```js
-keyTree.delete(["click", "li", handler1]);
+keyTree.delete( [ "click", "li", handler1 ] );
 ```
 
 The `keyTree` data structure will look like:
 
 ```js
 {
-    "click": {
-        "li": [handler2],
-        "span": [handler3]
-    }
+	"click": {
+		"li": [ handler2 ],
+		"span": [ handler3 ]
+	}
 }
 ```
 
 To delete the remaining `click` handlers:
 
 ```js
-keyTree.delete(["click"]);
+keyTree.delete( [ "click" ] );
 ```
 
 The `keyTree` data structure will look like:

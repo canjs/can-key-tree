@@ -1,6 +1,6 @@
 {
   "name": "can-key-tree",
-  "version": "0.3.0",
+  "version": "1.0.2",
   "description": "Add and remove items to a tree",
   "homepage": "",
   "repository": {
@@ -26,16 +26,6 @@
     "develop": "done-serve --static --develop --port 8080"
   },
   "main": "dist/cjs/can-key-tree",
-  "browser": {
-    "transform": [
-      "cssify"
-    ]
-  },
-  "browserify": {
-    "transform": [
-      "cssify"
-    ]
-  },
   "keywords": [
     "CanJS",
     "DoneJS",

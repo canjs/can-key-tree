@@ -10,27 +10,27 @@ Return all the leafs from the keyTree under the specified `keys`.
 Given this setup:
 
 ```js
-var keyTree = new KeyTree( [Object, Object, Array] );
+const keyTree = new KeyTree( [ Object, Object, Array ] );
 
-function handler1(){}
-function handler2(){}
-function handler3(){}
+function handler1() {}
+function handler2() {}
+function handler3() {}
 
-keyTree.add(["click", "li", handler1]);
-keyTree.add(["click", "li", handler2]);
-keyTree.add(["click", "span", handler3]);
+keyTree.add( [ "click", "li", handler1 ] );
+keyTree.add( [ "click", "li", handler2 ] );
+keyTree.add( [ "click", "span", handler3 ] );
 ```
 
 To get all the `li` `click` handlers, use `.get`:
 
 ```js
-keyTree.get(["click", "li"]) //-> [handler1, handler2]
+keyTree.get( [ "click", "li" ] ); //-> [handler1, handler2]
 ```
 
 To get all `click` handlers, you can also use `.get`:
 
 ```js
-keyTree.get(["click"]) //-> [handler1, handler2, handler3]
+keyTree.get( [ "click" ] ); //-> [handler1, handler2, handler3]
 ```
 
 @param {Array} [keys] An array of keys specifying where to get leaf values.  All leaf values will be
@@ -40,6 +40,6 @@ returned under the specified node.  For example `.get([])` returns all leaf valu
   returns a `Set`:
 
   ```js
-  var keyTree = new KeyTree([Object, Set]);
-  keyTree.get([]) //-> Set[]
-  ```
+const keyTree = new KeyTree( [ Object, Set ] );
+keyTree.get( [] ); //-> Set[]
+```

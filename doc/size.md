@@ -6,14 +6,14 @@
 Returns the size of the keyTree
 
 ```js
-var keyTree = new KeyTree( [Object, Object, Array] );
+const keyTree = new KeyTree( [ Object, Object, Array ] );
 
-function handler1 () {}
-function handler2 () {}
+function handler1() {}
+function handler2() {}
 keyTree.size(); //-> 0
 
-keyTree.add( ["click", "li", handler1] );
-keyTree.add( ["click", "li", handler2] );
+keyTree.add( [ "click", "li", handler1 ] );
+keyTree.add( [ "click", "li", handler2 ] );
 keyTree.size(); //-> 2
 ```
 
