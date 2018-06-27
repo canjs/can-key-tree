@@ -1,3 +1,4 @@
+"use strict";
 var reflect = require( "can-reflect" );
 
 // ## Helpers
