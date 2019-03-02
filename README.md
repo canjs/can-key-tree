@@ -5,8 +5,6 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/canjs/can-key-tree/blob/master/LICENSE)
 [![npm version](https://badge.fury.io/js/can-key-tree.svg)](https://www.npmjs.com/package/can-key-tree)
 [![Travis build status](https://travis-ci.org/canjs/can-key-tree.svg?branch=master)](https://travis-ci.org/canjs/can-key-tree)
-[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/canjs/can-key-tree?branch=master&svg=true)](https://ci.appveyor.com/project/matthewp/can-key-tree)
-[![Coverage status](https://coveralls.io/repos/github/canjs/can-key-tree/badge.svg?branch=master)](https://coveralls.io/github/canjs/can-key-tree?branch=master)
 [![Greenkeeper badge](https://badges.greenkeeper.io/canjs/can-key-tree.svg)](https://greenkeeper.io/)
 
 the tree can be any type that works with [can-reflect](https://canjs.com/doc/can-reflect.html).
