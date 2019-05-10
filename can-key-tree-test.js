@@ -4,58 +4,58 @@ var canReflect = require( 'can-reflect' );
 
 QUnit.module( 'can-key-tree' );
 
-QUnit.test('basics', function () {
+QUnit.test('basics', function(assert) {
 	var keyTree = new KeyTree( [Object, Object, Array] );
 
 	function handler1 () {}
 	function handler2 () {}
 
-	QUnit.equal( keyTree.size(), 0, "empty" );
+	assert.equal( keyTree.size(), 0, "empty" );
 
 	keyTree.add( ["click", "li", handler1] );
 	keyTree.add( ["click", "li", handler2] );
-	QUnit.equal( keyTree.size(), 2, "2" );
+	assert.equal( keyTree.size(), 2, "2" );
 
-	QUnit.deepEqual( keyTree.get( ["click", "li"] ), [handler1, handler2] );
-
-	keyTree.delete( ["click", "li", handler1] );
-	QUnit.equal( keyTree.size(), 1, "1" );
+	assert.deepEqual( keyTree.get( ["click", "li"] ), [handler1, handler2] );
 
 	keyTree.delete( ["click", "li", handler1] );
-	QUnit.equal( keyTree.size(), 1, "empty" );
+	assert.equal( keyTree.size(), 1, "1" );
+
+	keyTree.delete( ["click", "li", handler1] );
+	assert.equal( keyTree.size(), 1, "empty" );
 
 	keyTree.delete( ["click", "li", handler2] );
-	QUnit.equal( keyTree.size(), 0, "empty" );
+	assert.equal( keyTree.size(), 0, "empty" );
 });
 
-QUnit.test('root isnt a constructor', function () {
+QUnit.test('root isnt a constructor', function(assert) {
 	var root = {};
 	var keyTree = new KeyTree( [root, Object, Array] );
 
 	function handler1 () {}
 	function handler2 () {}
 
-	QUnit.equal( keyTree.size(), 0, "empty" );
+	assert.equal( keyTree.size(), 0, "empty" );
 
 	keyTree.add( ["click", "li", handler1] );
 	keyTree.add( ["click", "li", handler2] );
-	QUnit.equal( canReflect.size( root ), 1, "2" );
+	assert.equal( canReflect.size( root ), 1, "2" );
 
-	QUnit.deepEqual( keyTree.get( ["click", "li"] ), [handler1, handler2] );
-
-	keyTree.delete( ["click", "li", handler1] );
-	QUnit.equal( keyTree.size(), 1, "1" );
+	assert.deepEqual( keyTree.get( ["click", "li"] ), [handler1, handler2] );
 
 	keyTree.delete( ["click", "li", handler1] );
-	QUnit.equal( keyTree.size(), 1, "empty" );
+	assert.equal( keyTree.size(), 1, "1" );
+
+	keyTree.delete( ["click", "li", handler1] );
+	assert.equal( keyTree.size(), 1, "empty" );
 
 	keyTree.delete( ["click", "li", handler2] );
-	QUnit.equal( keyTree.size(), 0, "empty" );
+	assert.equal( keyTree.size(), 0, "empty" );
 });
 
-QUnit.test("delete base recursively removes all properties", 2, function () {
+QUnit.test("delete base recursively removes all properties", 2, function(assert) {
 	var MyMap = function ( parentKey ) {
-		QUnit.equal( parentKey, "element", "got the right parent key" );
+		assert.equal( parentKey, "element", "got the right parent key" );
 		this.data = {};
 	};
 	canReflect.assignSymbols( MyMap.prototype, {
@@ -66,7 +66,7 @@ QUnit.test("delete base recursively removes all properties", 2, function () {
 			return this.data[key];
 		},
 		"can.deleteKeyValue": function ( key ) {
-			QUnit.equal( key, "click", "deleted 2" );
+			assert.equal( key, "click", "deleted 2" );
 			delete this.data[key];
 		},
 		"can.getOwnEnumerableKeys": function () {
@@ -82,7 +82,7 @@ QUnit.test("delete base recursively removes all properties", 2, function () {
 });
 
 if ( typeof document !== "undefined" && document.body && document.body.matches ) {
-	QUnit.test("event delegation example", function () {
+	QUnit.test("event delegation example", function(assert) {
 		var fixture = document.querySelector( "#qunit-fixture" );
 		fixture.innerHTML = "<li><a id='anchor'>click</a></li>";
 
@@ -134,7 +134,7 @@ if ( typeof document !== "undefined" && document.body && document.body.matches )
 		}
 
 		function handler1 () {
-			QUnit.equal( dispatchNum, 1, "only dispatched once" );
+			assert.equal( dispatchNum, 1, "only dispatched once" );
 		}
 
 		eventTree.add( [fixture, "click", "li", handler1] );
@@ -144,10 +144,10 @@ if ( typeof document !== "undefined" && document.body && document.body.matches )
 		dispatch( "#anchor" );
 
 		function handler2 () {
-			QUnit.equal( dispatchNum, 3, "handler2" );
+			assert.equal( dispatchNum, 3, "handler2" );
 		}
 		function handler3 () {
-			QUnit.equal( dispatchNum, 3, "handler3" );
+			assert.equal( dispatchNum, 3, "handler3" );
 		}
 
 		eventTree.add( [fixture, "click", "li", handler2] );
@@ -159,7 +159,7 @@ if ( typeof document !== "undefined" && document.body && document.body.matches )
 	});
 }
 
-QUnit.test(".getNode and .get", function () {
+QUnit.test(".getNode and .get", function(assert) {
 	var keyTree = new KeyTree( [Object, Object, Array] );
 
 	function handler1 () {}
@@ -174,19 +174,19 @@ QUnit.test(".getNode and .get", function () {
 		span: [handler2]
 	};
 
-	QUnit.deepEqual( keyTree.getNode( ["click"] ), nodeShouldBe, ".getNode works" );
+	assert.deepEqual( keyTree.getNode( ["click"] ), nodeShouldBe, ".getNode works" );
 
-	QUnit.deepEqual( keyTree.get( ["click"] ), [handler1, handler2, handler2], ".get works" );
+	assert.deepEqual( keyTree.get( ["click"] ), [handler1, handler2, handler2], ".get works" );
 });
 
-QUnit.test("lifecycle callbacks", function () {
+QUnit.test("lifecycle callbacks", function(assert) {
 	var calls = 0;
 	var keyTree = new KeyTree( [Object, Object, Array], {
 		onFirst: function () {
-			QUnit.equal( calls, 1, "called when the first node is added" );
+			assert.equal( calls, 1, "called when the first node is added" );
 		},
 		onEmpty: function () {
-			QUnit.equal( calls, 3, "called when all nodes are removed" );
+			assert.equal( calls, 3, "called when all nodes are removed" );
 		}
 	});
 
@@ -203,29 +203,29 @@ QUnit.test("lifecycle callbacks", function () {
 	keyTree.delete( [] );
 });
 
-QUnit.test("handle missing keys", function () {
+QUnit.test("handle missing keys", function(assert) {
 	var keyTree = new KeyTree( [Object, Array] );
 
-	QUnit.notOk( keyTree.delete( ["abc"] ) );
-	QUnit.ok( true, "no error" );
+	assert.notOk( keyTree.delete( ["abc"] ) );
+	assert.ok( true, "no error" );
 });
 
-QUnit.test("add too deep (#3)", function () {
+QUnit.test("add too deep (#3)", function(assert) {
 	var keyTree = new KeyTree( [Object, Array] );
 
 	try {
 		keyTree.add( [1, 2, 3, 4, 5] );
 	} catch ( e ) {
-		QUnit.equal( e.message, "can-key-tree: Can not add path deeper than tree." );
+		assert.equal( e.message, "can-key-tree: Can not add path deeper than tree." );
 	}
 });
 
-QUnit.test("empty deep", function () {
+QUnit.test("empty deep", function(assert) {
 	var keyTree = new KeyTree( [Object, Object, Object, Array] );
-	QUnit.deepEqual( keyTree.get( "foo" ), [] );
+	assert.deepEqual( keyTree.get( "foo" ), [] );
 });
 
-QUnit.test("delete can get path of nodes deleted", function(){
+QUnit.test("delete can get path of nodes deleted", function(assert) {
 	var keyTree = new KeyTree([Object, Object,Array]);
 	var keys = [
 		["first","mutate", "abc"],
@@ -238,7 +238,7 @@ QUnit.test("delete can get path of nodes deleted", function(){
 	keyTree.delete([], function(event,queue, name){
 		KEYS.push([event, queue, name]);
 	});
-	QUnit.deepEqual(KEYS, keys, "got nodes that were deleted([])");
+	assert.deepEqual(KEYS, keys, "got nodes that were deleted([])");
 
 
 	keyTree.add(keys[0]);
@@ -247,7 +247,7 @@ QUnit.test("delete can get path of nodes deleted", function(){
 	keyTree.delete(["first"], function(event,queue, name){
 		KEYS.push([event, queue, name]);
 	});
-	QUnit.deepEqual(KEYS, keys, "got nodes that were deleted([key])");
+	assert.deepEqual(KEYS, keys, "got nodes that were deleted([key])");
 
 
 	keyTree.add(keys[0]);
@@ -256,30 +256,30 @@ QUnit.test("delete can get path of nodes deleted", function(){
 	keyTree.delete(["first","mutate","abc"], function(event,queue, name){
 		KEYS.push([event, queue, name]);
 	});
-	QUnit.deepEqual(KEYS, [keys[0]], "got nodes that were deleted([key])");
+	assert.deepEqual(KEYS, [keys[0]], "got nodes that were deleted([key])");
 });
 
 
-QUnit.test('isEmpty', function () {
+QUnit.test('isEmpty', function(assert) {
 	var keyTree = new KeyTree( [Object, Object, Array] );
 
 	function handler1 () {}
 	function handler2 () {}
 
-	QUnit.equal( keyTree.isEmpty(), true, "empty" );
+	assert.equal( keyTree.isEmpty(), true, "empty" );
 
 	keyTree.add( ["click", "li", handler1] );
 	keyTree.add( ["click", "li", handler2] );
-	QUnit.equal( keyTree.isEmpty(), false, "2" );
+	assert.equal( keyTree.isEmpty(), false, "2" );
 
-	QUnit.deepEqual( keyTree.get( ["click", "li"] ), [handler1, handler2] );
-
-	keyTree.delete( ["click", "li", handler1] );
-	QUnit.equal( keyTree.isEmpty(), false, "1" );
+	assert.deepEqual( keyTree.get( ["click", "li"] ), [handler1, handler2] );
 
 	keyTree.delete( ["click", "li", handler1] );
-	QUnit.equal( keyTree.isEmpty(), false, "empty" );
+	assert.equal( keyTree.isEmpty(), false, "1" );
+
+	keyTree.delete( ["click", "li", handler1] );
+	assert.equal( keyTree.isEmpty(), false, "empty" );
 
 	keyTree.delete( ["click", "li", handler2] );
-	QUnit.equal( keyTree.isEmpty(), true, "empty" );
+	assert.equal( keyTree.isEmpty(), true, "empty" );
 });
