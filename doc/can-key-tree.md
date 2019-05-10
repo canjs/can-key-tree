@@ -3,6 +3,7 @@
 @collection can-infrastructure
 @group can-key-tree.types 0 types
 @group can-key-tree.prototype 1 prototype
+@package ../package.json
 
 @description Store values in a tree structure.
 
