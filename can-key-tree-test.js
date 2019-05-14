@@ -53,7 +53,8 @@ QUnit.test('root isnt a constructor', function(assert) {
 	assert.equal( keyTree.size(), 0, "empty" );
 });
 
-QUnit.test("delete base recursively removes all properties", 2, function(assert) {
+QUnit.test("delete base recursively removes all properties", function(assert) {
+	assert.expect(2);
 	var MyMap = function ( parentKey ) {
 		assert.equal( parentKey, "element", "got the right parent key" );
 		this.data = {};
